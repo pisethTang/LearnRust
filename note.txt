@@ -1,0 +1,23 @@
+Tools within the Rust ecosystem:
+
+1. cargo: builds and runs Rust applications. It also knows how to download dependencies, usually hosted on https://crates.io and will pass them to rustrc when building your project. It also comes with a built-in test runner which is used to execute unit tests.  
+2. rustc: compiler that turns .rs files into binaries and other intermediate formats. 
+3. rustup: the Rust toolchain installer and updater -- used to install and update rustc and cargo when new versions of Rust are released. It can also download documentations for the std library. 
+
+
+Running code locally with cargo:
+1. cargo <dir_name> := creates a new <dir_name>/ directory for the code.
+2. cd <dir_name> := change into <dir_name>/ directory 
+3. cargo run := build and run the binary 
+
+
+----------------
+4. cargo check: to check your project for errors
+5. cargo build: to compile it without running it. 
+    + output: in target/debug for a normal debug build
+    + include --release to produce an optimized release build in target/release 
+
+6. We can add dependencies for the project by editing Cargo.toml. When you run cargo commands, it will 
+automatically download and compile missing dependencies for you. 
+
+
