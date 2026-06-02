@@ -4,3 +4,9 @@
 
 1. [Rust Project](https://codecrafters.io/blog/rust-projects)
 
+
+
+
+
+- We use a thread pool where we have a pool of threads that can concurrently handle the requests.
+e.g., if we have a pool of 10 threads, then our server can handle 10 concurrent requests.
