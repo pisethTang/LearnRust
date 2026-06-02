@@ -4,7 +4,7 @@
 
 1. [Rust Project](https://codecrafters.io/blog/rust-projects)
 
-
+2. [21 Rust pro tips](https://www.youtube.com/watch?v=53XYcpCgQWE)
 
 
 

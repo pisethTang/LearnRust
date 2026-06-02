@@ -21,7 +21,7 @@ fn main() {
     let pool = ThreadPool::new(num_threads);
     
     
-    for stream in listener.incoming(){
+    for stream in listener.incoming().take(2){
         let stream = stream.unwrap();
         // println!("Connection established!");
         // handle_connection(stream);

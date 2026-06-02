@@ -7,12 +7,18 @@ use std::sync::{Arc, Mutex};
 
 pub struct ThreadPool{
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>,
+    sender: mpsc::Sender<Message>,
 }
 
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
+
+
+enum Message {
+    NewJob(Job),
+    Terminate,
+}
 
 impl ThreadPool {
     // compiler-driven development (similar to test-driven development)
@@ -44,8 +50,36 @@ impl ThreadPool {
     where F: FnOnce() + Send + 'static
     {
         let job = Box::new(f);
-        self.sender.send(job).unwrap(); // send() returns a reuslt type 
+        self.sender.send(Message::NewJob(job)).unwrap(); // send() returns a reuslt type 
         // send will fail if all our threads stop running 
+    }
+}
+
+
+
+impl Drop for ThreadPool {
+    fn drop(&mut self){
+        println!("Sending terminate message to all workers");
+
+
+        for _ in &self.workers {
+            self.sender.send(Message::Terminate).unwrap();
+        }
+        // we have no control over when the workers pick up our messages 
+        // as long as num_workers = num_terminate messages, we should be fine 
+
+
+        println!("Shutting down all workers");
+
+
+
+        for worker in &mut self.workers {
+            println!("Shutting down worker {}", worker.id);
+            
+            if let Some(thread) = worker.thread.take() {
+                thread.join().unwrap();
+            }
+        }
     }
 }
 
@@ -53,27 +87,39 @@ impl ThreadPool {
 
 struct Worker {
     id: usize,
-    thread: thread::JoinHandle<()>
+    thread: Option<thread::JoinHandle<()>>
 }
 
 
 impl Worker {
-    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
+    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message>>>) -> Worker {
         
         // Worker {id, thread}
-        let thread = thread::spawn(move || {
-            let job = receiver
+        let thread = thread::spawn(move || loop {
+            let message = receiver
             .lock()
             .unwrap()
             .recv()
             .unwrap();
         
             println!("Worker {id} got a job; executing.");
-            job();
+            // job();
             // receiver;
+            match message  {
+                Message::NewJob(job) => {
+                    println!("Worker {id} got a job; executing.");
+                    job();
+                },
+                Message::Terminate => {
+                    println!("Worker {id} was told to terminate.");
+                    break;
+                }
+            }
         });
 
-        Worker {id, thread}
+
+
+        Worker {id, thread: Some(thread)}
     }
 }
 
